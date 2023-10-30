@@ -33,9 +33,37 @@ flutter_rust_bridge_codegen --rust-input native\src\api.rs --dart-output .\lib\b
 ```
 
 ### Linux/MacOS/any other Unix
+As soon as you make any modification to api.rs, you need to run codegen again.
+
 ```
 flutter_rust_bridge_codegen --rust-input native/src/api.rs --dart-output ./lib/bridge_generated.dart --dart-decl-output ./lib/bridge_definitions.dart
 ```
+
+## libtorch Manual installation (recommended)
+
+1. Download `libtorch` from https://pytorch.org/get-started/locally/. This package requires `v2.0.0`: if this version is no longer available on the "get started" page,
+the file should be accessible by modifying the target link, for example `https://download.pytorch.org/libtorch/cu118/libtorch-cxx11-abi-shared-with-deps-2.0.0%2Bcu118.zip` for a Linux version with CUDA11. **NOTE:** When using `rust-bert` as dependency from [crates.io](https://crates.io), please check the required `LIBTORCH` on the published package [readme](https://crates.io/crates/rust-bert) as it may differ from the version documented here (applying to the current repository version).
+2. Extract the library to a location of your choice
+3. Set the following environment variables
+##### Linux:
+```bash
+export LIBTORCH=/path/to/libtorch
+export LD_LIBRARY_PATH=${LIBTORCH}/lib:$LD_LIBRARY_PATH
+```
+
+##### Windows
+```powershell
+$Env:LIBTORCH = "X:\path\to\libtorch"
+$Env:Path += ";X:\path\to\libtorch\lib"
+```
+
+#### macOS + Homebrew
+```bash
+brew install pytorch jq
+export LIBTORCH=$(brew --cellar pytorch)/$(brew info --json pytorch | jq -r '.[0].installed[0].version')
+export LD_LIBRARY_PATH=${LIBTORCH}/lib:$LD_LIBRARY_PATH
+```
+
 
 ## Scaffolding in existing projects
 

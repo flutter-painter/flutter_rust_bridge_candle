@@ -3,11 +3,35 @@ name = "native"
 version = "0.1.0"
 edition = "2021"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
-[lib]
-crate-type = ["cdylib", "staticlib"]
-
 [dependencies]
-anyhow = "1"
 flutter_rust_bridge = "1"
+anyhow = { version = "1", features = ["backtrace"] }
+byteorder = "1.4.3"
+clap = { version = "4.2.4", features = ["derive"] }
+hf-hub = { version = "0.3.0", features=["tokio"]}
+imageproc = { version = "0.23.0", default-features = false }
+memmap2 = { version = "0.7.1", features = ["stable_deref_trait"] }
+rand = "0.8.5"
+rusttype = { version = "0.9", default-features = false }
+tracing = "0.1.37"
+tracing-chrome = "0.7.1"
+tracing-subscriber = "0.3.7"
+wav = "1.0.0"
+# Necessary to disambiguate with tokio in wasm examples which are 1.28.1
+tokio = "1.29.1"
+accelerate-src = {version = "0.3.2", optional = true}
+candle-core = "0.3.0" #{ git = "https://github.com/huggingface/candle.git", version = "0.3.0" }
+candle-nn = "0.3.0" #{ path = "../candle-nn", version = "0.3.0" }
+candle-transformers = "0.3.0" # { path = "../candle-transformers", version = "0.3.0" }
+#candle-flash-attn = "0.3.0" #{ path = "../candle-flash-attn", version = "0.3.0", optional = true }
+cudarc = { version = "0.9.15", features = ["f16"],optional = true }
+half = { version = "2.3.1", features = ["num-traits", "use-intrinsics", "rand_distr"], optional = true }
+image = { version = "0.24.7", default-features = false, features = ["jpeg", "png"] }
+intel-mkl-src = { version = "0.8.1", features = ["mkl-static-lp64-iomp"] , optional = true }
+num-traits = { version = "0.2.15" }
+pyo3 = { version = "0.19.0", features = ["auto-initialize"], optional = true }
+rayon = { version = "1.7.0" }
+safetensors = { version = "0.3.1" }
+serde = { version = "1.0.171", features = ["derive"] }
+serde_json = { version = "1.0.99" }
+tokenizers = { version = "0.13.4", features = ["onig"] }

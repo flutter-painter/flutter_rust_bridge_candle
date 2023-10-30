@@ -105,6 +105,11 @@ class _MyHomePageState extends State<MyHomePage> {
           // horizontal).
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
+            IconButton(
+                onPressed: () async {
+                  final result = api.translate();
+                },
+                icon: const Icon(Icons.translate)),
             const Text("You're running on"),
             // To render the results of a Future, a FutureBuilder is used which
             // turns a Future into an AsyncSnapshot, which can be used to
