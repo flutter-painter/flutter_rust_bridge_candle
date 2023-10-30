@@ -29,7 +29,7 @@ half = { version = "2.3.1", features = ["num-traits", "use-intrinsics", "rand_di
 image = { version = "0.24.7", default-features = false, features = ["jpeg", "png"] }
 intel-mkl-src = { version = "0.8.1", features = ["mkl-static-lp64-iomp"] , optional = true }
 num-traits = { version = "0.2.15" }
-pyo3 = { version = "0.19.0", features = ["auto-initialize"], optional = true }
+pyo3 = { version = "0.20.0", features = ["auto-initialize"], optional = true }
 rayon = { version = "1.7.0" }
 safetensors = { version = "0.3.1" }
 serde = { version = "1.0.171", features = ["derive"] }
