@@ -22,26 +22,7 @@ use std::sync::Arc;
 
 // Section: wire functions
 
-fn wire_platform_impl(port_: MessagePort) {
-    FLUTTER_RUST_BRIDGE_HANDLER.wrap::<_, _, _, Platform, _>(
-        WrapInfo {
-            debug_name: "platform",
-            port: Some(port_),
-            mode: FfiCallMode::Normal,
-        },
-        move || move |task_callback| Result::<_, ()>::Ok(platform()),
-    )
-}
-fn wire_rust_release_mode_impl(port_: MessagePort) {
-    FLUTTER_RUST_BRIDGE_HANDLER.wrap::<_, _, _, bool, _>(
-        WrapInfo {
-            debug_name: "rust_release_mode",
-            port: Some(port_),
-            mode: FfiCallMode::Normal,
-        },
-        move || move |task_callback| Result::<_, ()>::Ok(rust_release_mode()),
-    )
-}
+
 // Section: wrapper structs
 
 // Section: static checks
@@ -66,43 +47,3 @@ where
 }
 // Section: impl IntoDart
 
-impl support::IntoDart for Platform {
-    fn into_dart(self) -> support::DartAbi {
-        match self {
-            Self::Unknown => 0,
-            Self::Android => 1,
-            Self::Ios => 2,
-            Self::Windows => 3,
-            Self::Unix => 4,
-            Self::MacIntel => 5,
-            Self::MacApple => 6,
-            Self::Wasm => 7,
-        }
-        .into_dart()
-    }
-}
-impl support::IntoDartExceptPrimitive for Platform {}
-impl rust2dart::IntoIntoDart<Platform> for Platform {
-    fn into_into_dart(self) -> Self {
-        self
-    }
-}
-
-// Section: executor
-
-support::lazy_static! {
-    pub static ref FLUTTER_RUST_BRIDGE_HANDLER: support::DefaultHandler = Default::default();
-}
-
-/// cbindgen:ignore
-#[cfg(target_family = "wasm")]
-#[path = "bridge_generated.web.rs"]
-mod web;
-#[cfg(target_family = "wasm")]
-pub use web::*;
-
-#[cfg(not(target_family = "wasm"))]
-#[path = "bridge_generated.io.rs"]
-mod io;
-#[cfg(not(target_family = "wasm"))]
-pub use io::*;

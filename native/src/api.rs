@@ -61,7 +61,7 @@ pub fn device(cpu: bool) -> Result<Device, E> {
     }
 }
 
-pub fn main() -> anyhow::Result<()> {
+pub fn translate() -> anyhow::Result<()> {
     use hf_hub::api::sync::Api;
     let args = Args::parse();
 
