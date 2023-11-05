@@ -26,13 +26,14 @@ class NativeImpl implements Native {
   factory NativeImpl.wasm(FutureOr<WasmModule> module) =>
       NativeImpl(module as ExternalLibrary);
   NativeImpl.raw(this._platform);
-  Future<void> translate({dynamic hint}) {
+  Future<void> translate({required String text, dynamic hint}) {
+    var arg0 = _platform.api2wire_String(text);
     return _platform.executeNormal(FlutterRustBridgeTask(
-      callFfi: (port_) => _platform.inner.wire_translate(port_),
+      callFfi: (port_) => _platform.inner.wire_translate(port_, arg0),
       parseSuccessData: _wire2api_unit,
       parseErrorData: _wire2api_FrbAnyhowException,
       constMeta: kTranslateConstMeta,
-      argValues: [],
+      argValues: [text],
       hint: hint,
     ));
   }
@@ -40,41 +41,7 @@ class NativeImpl implements Native {
   FlutterRustBridgeTaskConstMeta get kTranslateConstMeta =>
       const FlutterRustBridgeTaskConstMeta(
         debugName: "translate",
-        argNames: [],
-      );
-
-  Future<Platform> platform({dynamic hint}) {
-    return _platform.executeNormal(FlutterRustBridgeTask(
-      callFfi: (port_) => _platform.inner.wire_platform(port_),
-      parseSuccessData: _wire2api_platform,
-      parseErrorData: null,
-      constMeta: kPlatformConstMeta,
-      argValues: [],
-      hint: hint,
-    ));
-  }
-
-  FlutterRustBridgeTaskConstMeta get kPlatformConstMeta =>
-      const FlutterRustBridgeTaskConstMeta(
-        debugName: "platform",
-        argNames: [],
-      );
-
-  Future<bool> rustReleaseMode({dynamic hint}) {
-    return _platform.executeNormal(FlutterRustBridgeTask(
-      callFfi: (port_) => _platform.inner.wire_rust_release_mode(port_),
-      parseSuccessData: _wire2api_bool,
-      parseErrorData: null,
-      constMeta: kRustReleaseModeConstMeta,
-      argValues: [],
-      hint: hint,
-    ));
-  }
-
-  FlutterRustBridgeTaskConstMeta get kRustReleaseModeConstMeta =>
-      const FlutterRustBridgeTaskConstMeta(
-        debugName: "rust_release_mode",
-        argNames: [],
+        argNames: ["text"],
       );
 
   void dispose() {
@@ -88,18 +55,6 @@ class NativeImpl implements Native {
 
   String _wire2api_String(dynamic raw) {
     return raw as String;
-  }
-
-  bool _wire2api_bool(dynamic raw) {
-    return raw as bool;
-  }
-
-  int _wire2api_i32(dynamic raw) {
-    return raw as int;
-  }
-
-  Platform _wire2api_platform(dynamic raw) {
-    return Platform.values[raw as int];
   }
 
   int _wire2api_u8(dynamic raw) {
@@ -117,6 +72,11 @@ class NativeImpl implements Native {
 
 // Section: api2wire
 
+@protected
+int api2wire_u8(int raw) {
+  return raw;
+}
+
 // Section: finalizer
 
 class NativePlatform extends FlutterRustBridgeBase<NativeWire> {
@@ -124,6 +84,17 @@ class NativePlatform extends FlutterRustBridgeBase<NativeWire> {
 
 // Section: api2wire
 
+  @protected
+  ffi.Pointer<wire_uint_8_list> api2wire_String(String raw) {
+    return api2wire_uint_8_list(utf8.encoder.convert(raw));
+  }
+
+  @protected
+  ffi.Pointer<wire_uint_8_list> api2wire_uint_8_list(Uint8List raw) {
+    final ans = inner.new_uint_8_list_0(raw.length);
+    ans.ref.ptr.asTypedList(raw.length).setAll(0, raw);
+    return ans;
+  }
 // Section: finalizer
 
 // Section: api_fill_to_wire
@@ -227,45 +198,35 @@ class NativeWire implements FlutterRustBridgeWireBase {
 
   void wire_translate(
     int port_,
+    ffi.Pointer<wire_uint_8_list> text,
   ) {
     return _wire_translate(
       port_,
+      text,
     );
   }
 
-  late final _wire_translatePtr =
-      _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Int64)>>(
-          'wire_translate');
-  late final _wire_translate =
-      _wire_translatePtr.asFunction<void Function(int)>();
+  late final _wire_translatePtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Void Function(
+              ffi.Int64, ffi.Pointer<wire_uint_8_list>)>>('wire_translate');
+  late final _wire_translate = _wire_translatePtr
+      .asFunction<void Function(int, ffi.Pointer<wire_uint_8_list>)>();
 
-  void wire_platform(
-    int port_,
+  ffi.Pointer<wire_uint_8_list> new_uint_8_list_0(
+    int len,
   ) {
-    return _wire_platform(
-      port_,
+    return _new_uint_8_list_0(
+      len,
     );
   }
 
-  late final _wire_platformPtr =
-      _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Int64)>>(
-          'wire_platform');
-  late final _wire_platform =
-      _wire_platformPtr.asFunction<void Function(int)>();
-
-  void wire_rust_release_mode(
-    int port_,
-  ) {
-    return _wire_rust_release_mode(
-      port_,
-    );
-  }
-
-  late final _wire_rust_release_modePtr =
-      _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Int64)>>(
-          'wire_rust_release_mode');
-  late final _wire_rust_release_mode =
-      _wire_rust_release_modePtr.asFunction<void Function(int)>();
+  late final _new_uint_8_list_0Ptr = _lookup<
+          ffi
+          .NativeFunction<ffi.Pointer<wire_uint_8_list> Function(ffi.Int32)>>(
+      'new_uint_8_list_0');
+  late final _new_uint_8_list_0 = _new_uint_8_list_0Ptr
+      .asFunction<ffi.Pointer<wire_uint_8_list> Function(int)>();
 
   void free_WireSyncReturn(
     WireSyncReturn ptr,
@@ -283,6 +244,13 @@ class NativeWire implements FlutterRustBridgeWireBase {
 }
 
 final class _Dart_Handle extends ffi.Opaque {}
+
+final class wire_uint_8_list extends ffi.Struct {
+  external ffi.Pointer<ffi.Uint8> ptr;
+
+  @ffi.Int32()
+  external int len;
+}
 
 typedef DartPostCObjectFnType = ffi.Pointer<
     ffi.NativeFunction<

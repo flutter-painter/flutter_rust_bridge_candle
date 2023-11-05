@@ -24,7 +24,7 @@ use tokenizers::Tokenizer;
 
 #[derive(Parser, Debug, Clone)]
 #[command(author, version, about, long_about = None)]
-pub struct Args {
+struct Args {
     /// Run on CPU rather than on GPU.
     #[arg(long)]
     cpu: bool,
@@ -77,7 +77,7 @@ pub struct Args {
     repeat_last_n: usize,
 }
 // taken from hugg face example
-pub fn device(cpu: bool) -> Result<Device> {
+fn device(cpu: bool) -> Result<Device> {
     if cpu {
         Ok(Device::Cpu)
     } else {
@@ -88,7 +88,7 @@ pub fn device(cpu: bool) -> Result<Device> {
         Ok(device)
     }
 }
-pub struct T5ModelBuilder {
+struct T5ModelBuilder {
     device: Device,
     config: t5::Config,
     weights_filename: Vec<PathBuf>,
@@ -96,7 +96,7 @@ pub struct T5ModelBuilder {
 
 
 
-    pub fn load() -> Result<(T5ModelBuilder, Tokenizer)> {
+    fn load() -> Result<(T5ModelBuilder, Tokenizer)> {
         let device = device(true)?;
         let default_model = "t5-small".to_string();
         let default_revision = "refs/pr/15".to_string();
@@ -133,14 +133,14 @@ pub struct T5ModelBuilder {
         ))
     }
 
-    pub fn build_encoder(t5: &T5ModelBuilder) -> Result<t5::T5EncoderModel> {
+    fn build_encoder(t5: &T5ModelBuilder) -> Result<t5::T5EncoderModel> {
         let vb = unsafe {
             VarBuilder::from_mmaped_safetensors(&t5.weights_filename, DTYPE, &t5.device)?
         };
         Ok(t5::T5EncoderModel::load(vb, &t5.config)?)
     }
 
-    pub fn build_conditional_generation(t5: &T5ModelBuilder) -> Result<t5::T5ForConditionalGeneration> {
+    fn build_conditional_generation(t5: &T5ModelBuilder) -> Result<t5::T5ForConditionalGeneration> {
         let vb = unsafe {
             VarBuilder::from_mmaped_safetensors(&t5.weights_filename, DTYPE, &t5.device)?
         };

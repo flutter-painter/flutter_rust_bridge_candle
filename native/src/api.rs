@@ -5,7 +5,7 @@ extern crate intel_mkl_src;
 extern crate accelerate_src;
 
 use anyhow::Error as E;
-use clap::{Parser, ValueEnum};
+//use clap::{Parser, ValueEnum};
 use candle_core::{DType, Device, Tensor};
 use candle_nn::VarBuilder;
 mod marian;
@@ -14,42 +14,41 @@ use tokenizers::Tokenizer;
 //use candle_transformers::generation::LogitsProcessor;
 const DTYPE: DType = DType::F32;
 
-#[derive(Clone, Debug, Copy, ValueEnum)]
+#[derive(Clone, Debug, Copy)]
 enum Which {
     Base,
     Big,
 }
 
-// TODO: Maybe add support for the conditional prompt.
-#[derive(Parser)]
-struct Args {
-    #[arg(long)]
-    model: Option<String>,
+// #[derive(Parser)]
+// struct Args {
+//     #[arg(long)]
+//     model: Option<String>,
 
-    #[arg(long)]
-    tokenizer: Option<String>,
+//     #[arg(long)]
+//     tokenizer: Option<String>,
 
-    #[arg(long)]
-    tokenizer_dec: Option<String>,
+//     #[arg(long)]
+//     tokenizer_dec: Option<String>,
 
-    /// Choose the variant of the model to run.
-    #[arg(long, default_value = "big")]
-    which: Which,
+//     /// Choose the variant of the model to run.
+//     #[arg(long, default_value = "big")]
+//     which: Which,
 
-    /// Run on CPU rather than on GPU.
-    #[arg(long)]
-    cpu: bool,
+//     /// Run on CPU rather than on GPU.
+//     #[arg(long)]
+//     cpu: bool,
 
-    /// Use the quantized version of the model.
-    #[arg(long)]
-    quantized: bool,
+//     /// Use the quantized version of the model.
+//     #[arg(long)]
+//     quantized: bool,
 
-    /// Text to be translated
-    #[arg(long)]
-    text: String,
-}
+//     /// Text to be translated
+//     #[arg(long)]
+//     text: String,
+// }
 
-pub fn device(cpu: bool) -> Result<Device, E> {
+fn device(cpu: bool) -> Result<Device, E> {
     if cpu {
         Ok(Device::Cpu)
     } else {
@@ -61,63 +60,70 @@ pub fn device(cpu: bool) -> Result<Device, E> {
     }
 }
 
-pub fn translate() -> anyhow::Result<()> {
+pub fn translate(text: String) -> anyhow::Result<()> {
     use hf_hub::api::sync::Api;
-    let args = Args::parse();
 
-    let config = match args.which {
-        Which::Base => marian::Config::opus_mt_fr_en(),
-        Which::Big => marian::Config::opus_mt_tc_big_fr_en(),
-    };
+    let config = marian::Config::opus_mt_fr_en();
+    // let config = match args.which {
+    //     Which::Base => marian::Config::opus_mt_fr_en(),
+    //     Which::Big => marian::Config::opus_mt_tc_big_fr_en(),
+    // };
     let tokenizer = {
-        let tokenizer = match args.tokenizer {
-            Some(tokenizer) => std::path::PathBuf::from(tokenizer),
-            None => {
-                let name = match args.which {
-                    Which::Base => "tokenizer-marian-base-fr.json",
-                    Which::Big => "tokenizer-marian-fr.json",
-                };
+        let tokenizer = {
+                let name =  "tokenizer-marian-base-fr.json";
+                // let name = match args.which {
+                //     Which::Base => "tokenizer-marian-base-fr.json",
+                //     Which::Big => "tokenizer-marian-fr.json",
+                // };
                 Api::new()?
                     .model("lmz/candle-marian".to_string())
                     .get(name)?
-            }
+
         };
         Tokenizer::from_file(&tokenizer).map_err(E::msg)?
     };
 
     let tokenizer_dec = {
-        let tokenizer = match args.tokenizer_dec {
-            Some(tokenizer) => std::path::PathBuf::from(tokenizer),
-            None => {
-                let name = match args.which {
-                    Which::Base => "tokenizer-marian-base-en.json",
-                    Which::Big => "tokenizer-marian-en.json",
-                };
+        let tokenizer = {
+                let name =  "tokenizer-marian-base-en.json"
+                ;
+                // let name = match args.which {
+                //     Which::Base => "tokenizer-marian-base-en.json",
+                //     Which::Big => "tokenizer-marian-en.json",
+                // };
                 Api::new()?
                     .model("lmz/candle-marian".to_string())
                     .get(name)?
-            }
         };
         Tokenizer::from_file(&tokenizer).map_err(E::msg)?
     };
 
-    let device = device(args.cpu)?;
+    let device = device(true)?;
+    //let model_cache = std::path::PathBuf::from(model);
     let vb = {
-        let model = match args.model {
-            Some(model) => std::path::PathBuf::from(model),
-            None => match args.which {
-                Which::Base => Api::new()?
+        let model =  Api::new()?
                     .repo(hf_hub::Repo::with_revision(
                         "Helsinki-NLP/opus-mt-fr-en".to_string(),
                         hf_hub::RepoType::Model,
                         "refs/pr/4".to_string(),
                     ))
-                    .get("model.safetensors")?,
-                Which::Big => Api::new()?
-                    .model("Helsinki-NLP/opus-mt-tc-big-fr-en".to_string())
-                    .get("model.safetensors")?,
-            },
-        };
+                    .get("model.safetensors")?
+        ;
+        // let model = match args.model {
+        //     Some(model) => std::path::PathBuf::from(model),
+        //     None => match args.which {
+        //         Which::Base => Api::new()?
+        //             .repo(hf_hub::Repo::with_revision(
+        //                 "Helsinki-NLP/opus-mt-fr-en".to_string(),
+        //                 hf_hub::RepoType::Model,
+        //                 "refs/pr/4".to_string(),
+        //             ))
+        //             .get("model.safetensors")?,
+        //         Which::Big => Api::new()?
+        //             .model("Helsinki-NLP/opus-mt-tc-big-fr-en".to_string())
+        //             .get("model.safetensors")?,
+        //     },
+        // };
         unsafe { VarBuilder::from_mmaped_safetensors(&[&model], DType::F32, &device)? }
     };
     let model = marian::MTModel::new(&config, vb)?;
@@ -127,7 +133,7 @@ pub fn translate() -> anyhow::Result<()> {
 
     let encoder_xs = {
         let mut tokens = tokenizer
-            .encode(args.text, true)
+            .encode(text, true)
             .map_err(E::msg)?
             .get_ids()
             .to_vec();
