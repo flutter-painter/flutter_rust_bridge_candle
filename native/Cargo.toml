@@ -24,7 +24,7 @@ candle-core = "0.3.0" #{ git = "https://github.com/huggingface/candle.git", vers
 candle-nn = "0.3.0" #{ path = "../candle-nn", version = "0.3.0" }
 candle-transformers = "0.3.0" # { path = "../candle-transformers", version = "0.3.0" }
 #candle-flash-attn = "0.3.0" #{ path = "../candle-flash-attn", version = "0.3.0", optional = true }
-cudarc = { version = "0.9.15", features = ["f16"],optional = true }
+cudarc = { version = "0.10.0", features = ["f16"],optional = true }
 half = { version = "2.3.1", features = ["num-traits", "use-intrinsics", "rand_distr"], optional = true }
 image = { version = "0.24.7", default-features = false, features = ["jpeg", "png"] }
 intel-mkl-src = { version = "0.8.1", features = ["mkl-static-lp64-iomp"] , optional = true }
